@@ -47,6 +47,14 @@
     stopNotificationCallbacks = [NSMutableDictionary new];
 }
 
+- (void)onReset {
+    for (CBPeripheral *peripheral in peripherals) {
+        if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
+            [manager cancelPeripheralConnection:peripheral];
+        }
+    }
+}
+
 #pragma mark - Cordova Plugin Methods
 
 - (void)connect:(CDVInvokedUrlCommand *)command {

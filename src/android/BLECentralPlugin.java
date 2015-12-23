@@ -71,6 +71,14 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     Map<String, Peripheral> peripherals = new LinkedHashMap<String, Peripheral>();
 
     @Override
+    public void onReset() {
+        for (Map.Entry<String, Peripheral> entry : peripherals.entrySet()) {
+            Peripheral peripheral = entry.getValue();
+            peripheral.disconnect();
+        }
+    }
+
+    @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
 
         LOG.d(TAG, "action = " + action);

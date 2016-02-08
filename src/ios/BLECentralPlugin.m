@@ -57,6 +57,15 @@
                        nil];
 }
 
+- (void)onReset {
+    stateCallbackId = nil;
+    for (CBPeripheral *peripheral in peripherals) {
+        if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
+            [manager cancelPeripheralConnection:peripheral];
+        }
+    }
+}
+
 #pragma mark - Cordova Plugin Methods
 
 - (void)connect:(CDVInvokedUrlCommand *)command {
@@ -326,10 +335,6 @@
     
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-- (void)onReset {
-    stateCallbackId = nil;
 }
 
 #pragma mark - timers

@@ -90,8 +90,13 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         removeStateListener();
     }
 
+    @Override
     public void onReset() {
         removeStateListener();
+        for (Map.Entry<String, Peripheral> entry : peripherals.entrySet()) {
+            Peripheral peripheral = entry.getValue();
+            peripheral.disconnect();
+        }
     }
 
     @Override

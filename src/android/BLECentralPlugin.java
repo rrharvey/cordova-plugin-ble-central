@@ -29,6 +29,8 @@ import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -65,16 +67,26 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String TAG = "BLEPlugin";
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
 
+    private boolean autoDisconnect = false;
+
     BluetoothAdapter bluetoothAdapter;
 
     // key is the MAC Address
     Map<String, Peripheral> peripherals = new LinkedHashMap<String, Peripheral>();
 
     @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        autoDisconnect = preferences.getBoolean("BleCentralAutoDisconnect", false);
+    }
+
+    @Override
     public void onReset() {
-        for (Map.Entry<String, Peripheral> entry : peripherals.entrySet()) {
-            Peripheral peripheral = entry.getValue();
-            peripheral.disconnect();
+        if (autoDisconnect) {
+            for (Map.Entry<String, Peripheral> entry : peripherals.entrySet()) {
+                Peripheral peripheral = entry.getValue();
+                peripheral.disconnect();
+            }
         }
     }
 

@@ -32,6 +32,7 @@
     NSMutableDictionary *notificationCallbacks;
     NSMutableDictionary *stopNotificationCallbacks;
     NSMutableDictionary *connectCallbackLatches;
+    BOOL autoDisconnect;
 }
 
 @property (strong, nonatomic) NSMutableSet *peripherals;

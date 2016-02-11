@@ -45,12 +45,17 @@
     writeCallbacks = [NSMutableDictionary new];
     notificationCallbacks = [NSMutableDictionary new];
     stopNotificationCallbacks = [NSMutableDictionary new];
+
+    id autoDisconnectString = [self.commandDelegate.settings objectForKey: [@"BleCentralAutoDisconnect" lowercaseString]];
+    autoDisconnect = autoDisconnectString == nil ? NO : [autoDisconnectString boolValue];
 }
 
 - (void)onReset {
-    for (CBPeripheral *peripheral in peripherals) {
-        if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
-            [manager cancelPeripheralConnection:peripheral];
+    if (autoDisconnect) {
+        for (CBPeripheral *peripheral in peripherals) {
+            if (peripheral && peripheral.state != CBPeripheralStateDisconnected) {
+                [manager cancelPeripheralConnection:peripheral];
+            }
         }
     }
 }

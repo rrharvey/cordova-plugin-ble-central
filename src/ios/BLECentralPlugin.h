@@ -33,6 +33,7 @@
     NSMutableDictionary *notificationCallbacks;
     NSMutableDictionary *stopNotificationCallbacks;
     NSMutableDictionary *connectCallbackLatches;
+    float serviceDiscoveryDelay;
 }
 
 @property (strong, nonatomic) NSMutableSet *peripherals;

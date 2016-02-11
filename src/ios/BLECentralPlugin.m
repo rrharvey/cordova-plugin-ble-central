@@ -55,6 +55,8 @@
                        @"off", @(CBCentralManagerStatePoweredOff),
                        @"on", @(CBCentralManagerStatePoweredOn),
                        nil];
+    id discoveryDelayString = [self.commandDelegate.settings objectForKey: [@"BleCentralServiceDiscoveryDelay" lowercaseString]];
+    serviceDiscoveryDelay = discoveryDelayString == nil ? 0 : [discoveryDelayString floatValue];
 }
 
 - (void)onReset {
@@ -394,7 +396,13 @@
     peripheral.delegate = self;
 
     // NOTE: it's inefficient to discover all services
-    [peripheral discoverServices:nil];
+    if (serviceDiscoveryDelay > 0) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(serviceDiscoveryDelay / 1000 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [peripheral discoverServices:nil];
+        });
+    } else {
+        [peripheral discoverServices:nil];
+    }
 
     // NOTE: not calling connect success until characteristics are discovered
 }

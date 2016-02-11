@@ -29,6 +29,8 @@ import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -65,10 +67,19 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
     private static final String TAG = "BLEPlugin";
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
 
+    private int serviceDiscoveryDelay = 0;
+    private Handler handler;
+
     BluetoothAdapter bluetoothAdapter;
 
     // key is the MAC Address
     Map<String, Peripheral> peripherals = new LinkedHashMap<String, Peripheral>();
+
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        serviceDiscoveryDelay = preferences.getInteger("BleCentralServiceDiscoveryDelay", 0);
+        handler = new Handler();
+    }
 
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -315,7 +326,6 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
         }
 
         if (scanSeconds > 0) {
-            Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -351,7 +361,7 @@ public class BLECentralPlugin extends CordovaPlugin implements BluetoothAdapter.
 
         if (!peripherals.containsKey(address)) {
 
-            Peripheral peripheral = new Peripheral(device, rssi, scanRecord);
+            Peripheral peripheral = new Peripheral(handler, device, rssi, scanRecord, serviceDiscoveryDelay);
             peripherals.put(device.getAddress(), peripheral);
 
             if (discoverCallback != null) {

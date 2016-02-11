@@ -18,6 +18,8 @@ import android.app.Activity;
 
 import android.bluetooth.*;
 import android.util.Base64;
+import android.os.Handler;
+import android.os.Looper;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
@@ -41,6 +43,7 @@ public class Peripheral extends BluetoothGattCallback {
     private BluetoothDevice device;
     private byte[] advertisingData;
     private int advertisingRSSI;
+    private int serviceDiscoveryDelay;
     private boolean connected = false;
     private ConcurrentLinkedQueue<BLECommand> commandQueue = new ConcurrentLinkedQueue<BLECommand>();
     private boolean bleProcessing;
@@ -50,14 +53,16 @@ public class Peripheral extends BluetoothGattCallback {
     private CallbackContext connectCallback;
     private CallbackContext readCallback;
     private CallbackContext writeCallback;
-
+    private final Handler handler;
     private Map<String, CallbackContext> notificationCallbacks = new HashMap<String, CallbackContext>();
 
-    public Peripheral(BluetoothDevice device, int advertisingRSSI, byte[] scanRecord) {
+    public Peripheral(Handler handler, BluetoothDevice device, int advertisingRSSI, byte[] scanRecord, int serviceDiscoveryDelay) {
 
+        this.handler = handler;
         this.device = device;
         this.advertisingRSSI = advertisingRSSI;
         this.advertisingData = scanRecord;
+        this.serviceDiscoveryDelay = serviceDiscoveryDelay;
 
     }
 
@@ -184,14 +189,25 @@ public class Peripheral extends BluetoothGattCallback {
     }
 
     @Override
-    public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+    public void onConnectionStateChange(BluetoothGatt gattClient, int status, int newState) {
 
-        this.gatt = gatt;
+        this.gatt = gattClient;
 
         if (newState == BluetoothGatt.STATE_CONNECTED) {
 
             connected = true;
-            gatt.discoverServices();
+
+            if (serviceDiscoveryDelay > 0) {
+                handler.postDelayed(new Runnable() {
+                  @Override
+                  public void run() {
+                      gatt.discoverServices();
+                  }
+                }, serviceDiscoveryDelay);
+            }
+            else {
+                gatt.discoverServices();
+            }
 
         } else {
 
